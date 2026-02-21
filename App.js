@@ -1,6 +1,7 @@
+
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView, SafeAreaViewBase, SafeAreaView } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, View } from 'react-native';
 
 export default function App() {
   const [pokemons, setPokemons] = useState([]);
