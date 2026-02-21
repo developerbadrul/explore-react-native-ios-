@@ -1,7 +1,7 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, View, StyleSheet, Image } from 'react-native';
 
 export default function App() {
   const [pokemons, setPokemons] = useState([]);
@@ -10,11 +10,27 @@ export default function App() {
 
   useEffect(() => {
     const fetchPokemons = async () => {
+      setLoading(true);
       try {
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=20`);
-        const result = await response.json();
-        // FIX: Changed result.result to result.results
-        setPokemons(result.results);
+        const data = await response.json();
+
+        const detailedPokemons = await Promise.allSettled(
+          data.results.map(async (pokemon) => {
+            const res = await fetch(pokemon.url);
+            const details = await res.json();
+
+            return {
+              id: details.id,
+              name: pokemon.name,
+              image: details.sprites?.front_default
+            }
+          })
+        )
+        const successful = detailedPokemons.filter(result => result.status === "fulfilled")
+          .map(result => result.value)
+
+        setPokemons(successful);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -48,9 +64,13 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {pokemons.map((pokemon) => (
-          <View key={pokemon.name} style={styles.card}>
+        {pokemons.map((pokemon, i) => (
+          <View key={pokemon.id} style={styles.card}>
             <Text style={styles.name}>{pokemon.name}</Text>
+            <Image
+              source={{uri: pokemon.image}}
+              style={{width:100, height: 100}}
+            />
           </View>
         ))}
       </ScrollView>
@@ -82,7 +102,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   name: {
-    fontSize: 18,
+    fontSize: 28,
     textTransform: 'capitalize',
+    fontWeight: "bold"
   },
 });
