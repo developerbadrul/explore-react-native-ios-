@@ -8,6 +8,28 @@ export default function App() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const colorByType = {
+    grass: '#78C850',
+    fire: '#F08030',
+    water: '#6890F0',
+    bug: '#A8B820',
+    normal: '#A8A878',
+    poison: '#A040A0',
+    electric: '#F8D030',
+    ground: '#E0C068',
+    fairy: '#EE99AC',
+    fighting: '#C03028',
+    psychic: '#F85888',
+    rock: '#B8A038',
+    ghost: '#705898',
+    ice: '#98D8D8',
+    dragon: '#7038F8',
+    dark: '#705848',
+    steel: '#B8B8D0',
+    flying: '#A890F0',
+    default: '#68A090', // Fallback color
+  };
+
   useEffect(() => {
     const fetchPokemons = async () => {
       setLoading(true);
@@ -23,12 +45,16 @@ export default function App() {
             return {
               id: details.id,
               name: pokemon.name,
-              image: details.sprites?.front_default
+              image: details.sprites?.front_default,
+              imageBack: details.sprites?.back_default,
+              types: details.types?.[0]?.type.name
             }
           })
         )
         const successful = detailedPokemons.filter(result => result.status === "fulfilled")
           .map(result => result.value)
+
+        // console.log(JSON.stringify(successful, null, 2));
 
         setPokemons(successful);
       } catch (error) {
@@ -64,13 +90,23 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {pokemons.map((pokemon, i) => (
-          <View key={pokemon.id} style={styles.card}>
+        {pokemons.map((pokemon) => (
+          <View key={pokemon.id} style={[
+            styles.card,
+            { backgroundColor: colorByType[pokemon.types] + 50 || colorByType.default },
+          ]}>
             <Text style={styles.name}>{pokemon.name}</Text>
-            <Image
-              source={{uri: pokemon.image}}
-              style={{width:100, height: 100}}
-            />
+            <Text style={styles.type}>{pokemon.types}</Text>
+            <View style={{ flexDirection: "row" }}>
+              <Image
+                source={{ uri: pokemon.image }}
+                style={{ width: 150, height: 150 }}
+              />
+              <Image
+                source={{ uri: pokemon.imageBack }}
+                style={{ width: 150, height: 150 }}
+              />
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -89,14 +125,13 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   scrollContent: {
-    padding: 20, // Numeric value, no quotes
+    padding: 16, // Numeric value, no quotes
   },
   card: {
-    backgroundColor: '#fff',
-    padding: 15,
+    padding: 20,
     marginVertical: 8,
-    borderRadius: 8,
-    elevation: 2, // Shadow for Android
+    borderRadius: 16,
+    // elevation: 2, // Shadow for Android
     shadowColor: '#000', // Shadow for iOS
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -104,6 +139,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 28,
     textTransform: 'capitalize',
-    fontWeight: "bold"
+    fontWeight: "bold",
+    textAlign: "center"
   },
+  type: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textTransform: 'capitalize',
+    color: 'gray',
+    textAlign: 'center'
+  }
 });
